@@ -1,0 +1,15 @@
+export const ORDER_STATUS = Object.freeze({
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  PACKED: 'PACKED',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+});
+
+export const ORDER_STATUS_LABELS = {
+  [ORDER_STATUS.PENDING]: 'Pending',
+  [ORDER_STATUS.ACCEPTED]: 'Accepted',
+  [ORDER_STATUS.PACKED]: 'Packed',
+  [ORDER_STATUS.DELIVERED]: 'Delivered',
+  [ORDER_STATUS.CANCELLED]: 'Cancelled',
+};
