@@ -1,53 +1,34 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Input, Button } from '../../components/common';
+import { Button } from '../../components/common';
 import { colors, spacing, typography } from '../../theme';
-import { AUTH_ROUTES } from '../../constants/routes';
-import { loginSchema } from '../../utils/validationSchemas';
-import { sendOtp } from '../../redux/slices/authSlice';
+import { googleLogin } from '../../redux/slices/authSlice';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const dispatch = useDispatch();
-  const otpStatus = useSelector((state) => state.auth.otpStatus);
-  const [phone, setPhone] = useState('');
-  const [formError, setFormError] = useState(null);
+  const loginStatus = useSelector((state) => state.auth.loginStatus);
+  const loginError = useSelector((state) => state.auth.loginError);
 
-  const handleSubmit = async () => {
-    try {
-      await loginSchema.validate({ phone });
-    } catch (err) {
-      setFormError(err.message);
-      return;
-    }
-
-    setFormError(null);
-    const result = await dispatch(sendOtp(phone.trim()));
-    if (sendOtp.fulfilled.match(result)) {
-      navigation.navigate(AUTH_ROUTES.OTP_VERIFY);
-    } else {
-      setFormError(result.payload);
-    }
+  const handleGoogleLogin = () => {
+    // On success RootNavigator/AuthStack swap to the right screen automatically
+    // (ProfileSetup if the profile is incomplete, otherwise the tab navigator).
+    dispatch(googleLogin());
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Log in</Text>
-      <Text style={styles.subtitle}>We'll send you a one-time code to verify your number.</Text>
-      <Input
-        label="Phone number"
-        placeholder="e.g. 9876543210"
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={setPhone}
-        error={formError}
-      />
+      <Text style={styles.subtitle}>Continue with your Google account to get fresh veggies delivered.</Text>
+
       <Button
-        title="Send OTP"
-        onPress={handleSubmit}
-        loading={otpStatus === 'loading'}
+        title="Continue with Google"
+        onPress={handleGoogleLogin}
+        loading={loginStatus === 'loading'}
         style={styles.button}
       />
+
+      {loginError ? <Text style={styles.error}>{loginError}</Text> : null}
     </View>
   );
 }
@@ -70,5 +51,11 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing.sm,
+  },
+  error: {
+    ...typography.caption,
+    color: colors.danger,
+    marginTop: spacing.md,
+    textAlign: 'center',
   },
 });

@@ -1,8 +1,6 @@
 import axiosClient from '../axiosClient';
 
-export const sendOtp = (phone) => axiosClient.post('/auth/send-otp', { phone });
-
-export const verifyOtp = (phone, otp) => axiosClient.post('/auth/verify-otp', { phone, otp });
+export const googleLogin = (idToken) => axiosClient.post('/auth/google', { idToken });
 
 export const refreshToken = (token) => axiosClient.post('/auth/refresh-token', { refreshToken: token });
 

@@ -1,24 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as authApi from '../../api/endpoints/authApi';
+import { signInWithGoogle, signOutFromGoogle } from '../../services/googleAuth';
 
 function extractErrorMessage(err) {
   return err.response?.data?.message || err.message || 'Something went wrong';
 }
 
-export const sendOtp = createAsyncThunk('auth/sendOtp', async (phone, { rejectWithValue }) => {
-  try {
-    await authApi.sendOtp(phone);
-    return phone;
-  } catch (err) {
-    return rejectWithValue(extractErrorMessage(err));
-  }
-});
-
-export const verifyOtp = createAsyncThunk(
-  'auth/verifyOtp',
-  async ({ phone, otp }, { rejectWithValue }) => {
+// Runs the native Google flow, then exchanges the ID token for our own JWTs.
+// Rejects with `null` on user cancellation so the UI can quietly stand down.
+export const googleLogin = createAsyncThunk(
+  'auth/googleLogin',
+  async (_, { rejectWithValue }) => {
     try {
-      const { data } = await authApi.verifyOtp(phone, otp);
+      const idToken = await signInWithGoogle();
+      if (!idToken) return rejectWithValue(null);
+      const { data } = await authApi.googleLogin(idToken);
       return data.data;
     } catch (err) {
       return rejectWithValue(extractErrorMessage(err));
@@ -48,16 +44,13 @@ export const updateProfile = createAsyncThunk(
 );
 
 const initialState = {
-  user: null, // { id, name, phone, role, building, wing, flat, status, isProfileComplete }
+  user: null, // { id, name, phone, email, avatar, role, building, wing, flat, status, isProfileComplete }
   token: null,
   refreshToken: null,
   isAuthenticated: false,
 
-  phone: null,
-  otpStatus: 'idle', // idle | loading | sent | error
-  otpError: null,
-  verifyStatus: 'idle', // idle | loading | error
-  verifyError: null,
+  loginStatus: 'idle', // idle | loading | error
+  loginError: null,
   profileStatus: 'idle', // idle | loading | error
   profileError: null,
 };
@@ -76,49 +69,34 @@ const authSlice = createSlice({
     updateUser(state, action) {
       state.user = { ...state.user, ...action.payload };
     },
-    resetOtpFlow(state) {
-      state.phone = null;
-      state.otpStatus = 'idle';
-      state.otpError = null;
-      state.verifyStatus = 'idle';
-      state.verifyError = null;
-    },
     logout(state) {
       state.user = null;
       state.token = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
+      state.loginStatus = 'idle';
+      state.loginError = null;
+      // Clear the cached Google session too, so the next login re-prompts.
+      signOutFromGoogle();
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(sendOtp.pending, (state) => {
-        state.otpStatus = 'loading';
-        state.otpError = null;
+      .addCase(googleLogin.pending, (state) => {
+        state.loginStatus = 'loading';
+        state.loginError = null;
       })
-      .addCase(sendOtp.fulfilled, (state, action) => {
-        state.otpStatus = 'sent';
-        state.phone = action.payload;
-      })
-      .addCase(sendOtp.rejected, (state, action) => {
-        state.otpStatus = 'error';
-        state.otpError = action.payload;
-      })
-
-      .addCase(verifyOtp.pending, (state) => {
-        state.verifyStatus = 'loading';
-        state.verifyError = null;
-      })
-      .addCase(verifyOtp.fulfilled, (state, action) => {
-        state.verifyStatus = 'idle';
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        state.loginStatus = 'idle';
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.isAuthenticated = true;
       })
-      .addCase(verifyOtp.rejected, (state, action) => {
-        state.verifyStatus = 'error';
-        state.verifyError = action.payload;
+      .addCase(googleLogin.rejected, (state, action) => {
+        // `null` payload == user cancelled; keep the screen quiet in that case.
+        state.loginStatus = action.payload ? 'error' : 'idle';
+        state.loginError = action.payload || null;
       })
 
       .addCase(fetchMe.fulfilled, (state, action) => {
@@ -140,5 +118,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, updateUser, resetOtpFlow, logout } = authSlice.actions;
+export const { setCredentials, updateUser, logout } = authSlice.actions;
 export default authSlice.reducer;

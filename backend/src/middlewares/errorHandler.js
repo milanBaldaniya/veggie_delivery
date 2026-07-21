@@ -24,6 +24,10 @@ function errorHandler(err, req, res, next) {
   } else if (err.name === 'CastError') {
     statusCode = 400;
     message = `Invalid value for ${err.path}`;
+  } else if (err.name === 'MulterError') {
+    // File upload errors (e.g. file too large).
+    statusCode = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'Image is too large (max 5MB)' : err.message;
   }
 
   if (statusCode === 500) {

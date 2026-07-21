@@ -22,14 +22,40 @@ module.exports = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
 
-  otp: {
-    length: Number(process.env.OTP_LENGTH) || 4,
-    expiresInMinutes: Number(process.env.OTP_EXPIRES_IN_MINUTES) || 5,
-    maxAttempts: Number(process.env.OTP_MAX_ATTEMPTS) || 5,
-    resendCooldownSeconds: Number(process.env.OTP_RESEND_COOLDOWN_SECONDS) || 30,
+  order: {
+    // Customers can only place orders before this hour (24h clock) in the
+    // configured timezone; after it the order window is closed until the next
+    // day. Enforced server-side so a device with a wrong clock can't bypass it.
+    cutoffHour: Number(process.env.ORDER_CUTOFF_HOUR) || 12,
+    timezone: process.env.ORDER_TIMEZONE || 'Asia/Kolkata',
   },
 
-  smsProvider: process.env.SMS_PROVIDER || 'console',
+  billing: {
+    // Cron for the weekly bill finalization job. Default: Monday 00:05 (in the
+    // order timezone), closing out the week that just ended.
+    weeklyCron: process.env.WEEKLY_BILLING_CRON || '5 0 * * 1',
+  },
+
+  google: {
+    // Every OAuth client that can produce an ID token we must accept as an
+    // audience: the Web client (used by the backend to verify and by the
+    // Android app's `webClientId`), plus the iOS client. Comma-separated.
+    clientIds: (process.env.GOOGLE_CLIENT_IDS || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean),
+  },
 
   corsOrigin: process.env.CORS_ORIGIN || '*',
+
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    folder: process.env.CLOUDINARY_FOLDER || 'veggie-delivery/products',
+    // Only usable once all three credentials are present.
+    get isConfigured() {
+      return Boolean(this.cloudName && this.apiKey && this.apiSecret);
+    },
+  },
 };

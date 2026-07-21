@@ -6,12 +6,20 @@ const getMe = asyncHandler(async (req, res) => {
 });
 
 const updateMe = asyncHandler(async (req, res) => {
-  const { name, building, wing, flat } = req.body;
+  const { name, phone, address } = req.body;
 
   req.user.name = name;
-  if (building !== undefined) req.user.building = building || null;
-  if (wing !== undefined) req.user.wing = wing || null;
-  if (flat !== undefined) req.user.flat = flat || null;
+  if (phone !== undefined) {
+    req.user.phone = phone;
+  }
+  if (address !== undefined) {
+    req.user.address = {
+      building: address.building || null,
+      wing: address.wing || null,
+      flat: address.flat || null,
+      landmark: address.landmark || null,
+    };
+  }
 
   await req.user.save();
 

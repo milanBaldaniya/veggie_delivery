@@ -3,7 +3,6 @@
 export const AUTH_ROUTES = Object.freeze({
   SPLASH: 'Splash',
   LOGIN: 'Login',
-  OTP_VERIFY: 'OtpVerify',
   PROFILE_SETUP: 'ProfileSetup',
 });
 
@@ -12,6 +11,7 @@ export const CUSTOMER_TABS = Object.freeze({
   CATEGORIES: 'CategoriesTab',
   CART: 'CartTab',
   ORDERS: 'OrdersTab',
+  BILLS: 'BillsTab',
   PROFILE: 'ProfileTab',
 });
 

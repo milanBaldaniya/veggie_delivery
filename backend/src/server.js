@@ -2,10 +2,14 @@ const env = require('./config/env');
 const connectDB = require('./config/db');
 const logger = require('./utils/logger');
 const app = require('./app');
+const { startWeeklyBillingJob } = require('./jobs/weeklyBilling.job');
 
 async function start() {
   await connectDB();
   logger.info('MongoDB connected');
+
+  // Automatic weekly bill finalization (offline collection stays manual).
+  startWeeklyBillingJob();
 
   const server = app.listen(env.port, () => {
     logger.info(`Server listening on port ${env.port} (${env.nodeEnv})`);
