@@ -1,37 +1,45 @@
-# Google Sign-In setup
+# Google Sign-In setup (via Firebase Auth)
 
-The app now logs customers in with Google instead of phone/OTP. The code is
-wired up, but Google Sign-In needs native config and real OAuth credentials
-before it will run. Follow these steps once.
+The app logs customers in with Google, using **Firebase Authentication** as
+the identity layer: the native Google account picker still runs on-device,
+but the token the backend verifies is a Firebase ID token, verified with the
+Firebase Admin SDK — not a raw Google OAuth token checked by hand.
 
-## 1. Create OAuth clients (Google Cloud Console)
+The code is wired up, but it needs a Firebase project, native config, and
+real credentials before it will run. Follow these steps once.
 
-In **Google Cloud Console → APIs & Services → Credentials**, on the project that
-owns your Firebase/OAuth consent screen, create these OAuth 2.0 client IDs:
+## 1. Create a Firebase project
 
-| Client type | Needed for | Notes |
-|-------------|------------|-------|
-| **Web application** | Backend token verification + the app's `webClientId` | This is the audience the backend checks. Required on both platforms. |
-| **Android** | Android app | Provide the package name (`applicationId` in `android/app/build.gradle`) and the app's **SHA-1** fingerprint. |
-| **iOS** | iOS app | Provide the iOS bundle identifier. |
+In the [Firebase Console](https://console.firebase.google.com/), create a
+project (or reuse an existing one) and add:
 
-Get the debug SHA-1:
+- An **Android app** — package name `com.veggiedeliverytemp` (see
+  `android/app/build.gradle` → `applicationId`). Add the debug **and** release
+  SHA-1 fingerprints under Project Settings → Your apps, since Google Sign-In
+  on Android needs them:
 
-```bash
-cd mobile/android && ./gradlew signingReport
-# copy the SHA1 under Variant: debug
-```
+  ```bash
+  cd mobile/android && ./gradlew signingReport
+  # copy the SHA1 under Variant: debug (and release before shipping)
+  ```
 
-Add the release SHA-1 too before shipping.
+- An **iOS app** — bundle identifier matching the Xcode project.
 
-## 2. Backend env
+Then, in **Authentication → Sign-in method**, enable the **Google** provider.
+Enabling it auto-creates a **Web client ID** — that's the one this app uses
+as `webClientId` (Google Sign-In on both Android and iOS mints its ID token
+against that audience). Note it down; you'll also find the iOS client ID
+under the iOS app's config.
 
-Set every client ID whose tokens the backend should accept (comma-separated —
-the Web client ID and the iOS client ID at minimum):
+## 2. Backend — Firebase Admin SDK
+
+In **Project Settings → Service Accounts**, click **Generate new private
+key**. Save the downloaded JSON as `backend/firebase-service-account.json`
+(this path is git-ignored — never commit it).
 
 ```
 # backend/.env
-GOOGLE_CLIENT_IDS=<web-client-id>.apps.googleusercontent.com,<ios-client-id>.apps.googleusercontent.com
+FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json
 ```
 
 Then install the new dependency:
@@ -42,14 +50,15 @@ cd backend && npm install
 
 ## 3. Mobile config
 
-Put the Web and iOS client IDs in [src/constants/config.js](src/constants/config.js):
+Put the Web and iOS client IDs (from step 1) in
+[src/constants/config.js](src/constants/config.js):
 
 ```js
 export const GOOGLE_WEB_CLIENT_ID = '<web-client-id>.apps.googleusercontent.com';
 export const GOOGLE_IOS_CLIENT_ID = '<ios-client-id>.apps.googleusercontent.com';
 ```
 
-Install the native module:
+Install the native modules:
 
 ```bash
 cd mobile && npm install
@@ -57,19 +66,20 @@ cd mobile && npm install
 
 ### Android
 
-1. Download `google-services.json` from Firebase (or configure the Google
-   Sign-In plugin) and place it at `mobile/android/app/google-services.json`.
-2. Ensure the Google Services Gradle plugin is applied (needed for
-   `google-services.json`):
-   - `android/build.gradle` → `dependencies { classpath 'com.google.gms:google-services:4.4.2' }`
-   - `android/app/build.gradle` → add `apply plugin: 'com.google.gms.google-services'` at the bottom.
+1. Download `google-services.json` from the Firebase Console (Android app →
+   config file) and place it at `mobile/android/app/google-services.json`.
+   The Google Services Gradle plugin that reads it is already applied
+   (`android/build.gradle` classpath + `android/app/build.gradle` plugin).
 
 ### iOS
 
-1. Add the **iOS URL scheme** (the reversed iOS client ID) to
-   `ios/<App>/Info.plist` under `CFBundleURLTypes`, e.g.
-   `com.googleusercontent.apps.<ios-client-id>`.
-2. Install pods:
+1. Download `GoogleService-Info.plist` from the Firebase Console (iOS app →
+   config file) and add it to the Xcode project (`ios/<App>/`), making sure
+   it's included in the app target.
+2. Add the **iOS URL scheme** (the reversed iOS client ID, found inside
+   `GoogleService-Info.plist` as `REVERSED_CLIENT_ID`) to
+   `ios/<App>/Info.plist` under `CFBundleURLTypes`.
+3. Install pods:
 
    ```bash
    cd mobile/ios && pod install
@@ -88,13 +98,16 @@ Tap **Continue with Google**, pick an account, and you'll land on the profile
 setup screen (name, **phone**, delivery address) the first time — Google doesn't
 give us a phone number, so it's collected there for delivery.
 
-## What changed in the code
+## How it works
 
-- **Backend**: `POST /auth/google` (was `/auth/send-otp` + `/auth/verify-otp`)
-  verifies the Google ID token via `google-auth-library`, then finds/creates a
-  user by `googleId`/email and issues the same JWT pair. OTP service, SMS
-  provider, and OTP model fields were removed. `updateMe` now accepts a `phone`,
-  and a profile is "complete" only with name + phone + address.
-- **Mobile**: `LoginScreen` is a single **Continue with Google** button; the OTP
-  verify screen/route is gone. `ProfileSetupScreen` gained a phone field. Login
-  state lives under `auth.loginStatus` / `auth.loginError`.
+1. Mobile launches the native Google account picker
+   (`@react-native-google-signin/google-signin`) and gets back a Google ID
+   token.
+2. Mobile exchanges that for a Firebase credential
+   (`@react-native-firebase/auth`'s `GoogleAuthProvider.credential` +
+   `signInWithCredential`), then reads the resulting **Firebase ID token**.
+3. Mobile sends the Firebase ID token to `POST /auth/google`.
+4. Backend verifies it with the Firebase Admin SDK
+   (`admin.auth().verifyIdToken`), finds/creates a `User` by `firebaseUid`/
+   email, and issues our own JWT access/refresh pair — the rest of the app's
+   auth (middleware, refresh, `/auth/me`) is unchanged.

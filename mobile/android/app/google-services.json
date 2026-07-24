@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "587202000045",
+    "project_id": "veggiedelivery-1662f",
+    "storage_bucket": "veggiedelivery-1662f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:587202000045:android:6ef1132856ed97b2858224",
+        "android_client_info": {
+          "package_name": "com.veggiedeliverytemp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "587202000045-1qrt5q9r7r5lprjlrtdcigjutb6nnkcp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.veggiedeliverytemp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "587202000045-5750gd6ncqknr8ksluqm2kbajb736df7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCi758XrHYPw3RIJgbGnZwob3_b48uFajs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "587202000045-5750gd6ncqknr8ksluqm2kbajb736df7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

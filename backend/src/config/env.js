@@ -36,14 +36,14 @@ module.exports = {
     weeklyCron: process.env.WEEKLY_BILLING_CRON || '5 0 * * 1',
   },
 
-  google: {
-    // Every OAuth client that can produce an ID token we must accept as an
-    // audience: the Web client (used by the backend to verify and by the
-    // Android app's `webClientId`), plus the iOS client. Comma-separated.
-    clientIds: (process.env.GOOGLE_CLIENT_IDS || '')
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean),
+  firebase: {
+    // Path to the Firebase Admin SDK service account JSON (Firebase Console →
+    // Project Settings → Service Accounts → Generate new private key). Used to
+    // verify the Firebase ID tokens the mobile app sends after Google sign-in.
+    serviceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '',
+    get isConfigured() {
+      return Boolean(this.serviceAccountPath);
+    },
   },
 
   corsOrigin: process.env.CORS_ORIGIN || '*',

@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 // Cart is keyed by productId; each line stores a snapshot of the product plus
 // the total grams the customer wants. Adding/removing works in gram deltas so
@@ -47,7 +47,11 @@ export const { addToCart, decrementItem, removeItem, clearCart } = cartSlice.act
 export default cartSlice.reducer;
 
 // ----- selectors -----
-export const selectCartItems = (state) => Object.values(state.cart.items);
+// Memoized: Object.values() would otherwise allocate a new array on every
+// call, even when state.cart.items hasn't changed, tripping React-Redux's
+// "selector returned a different result" warning on unrelated state updates.
+const selectCartItemsMap = (state) => state.cart.items;
+export const selectCartItems = createSelector(selectCartItemsMap, (items) => Object.values(items));
 export const selectCartGrams = (productId) => (state) => state.cart.items[productId]?.grams || 0;
 export const selectCartProductCount = (state) => Object.keys(state.cart.items).length;
 export const selectCartTotal = (state) =>

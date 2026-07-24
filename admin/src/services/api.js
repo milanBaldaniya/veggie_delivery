@@ -1,9 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { logout } from '../features/auth/authSlice';
 
-// Base query attaches the bearer token from auth state to every request.
+// Dev uses the Vite proxy (relative path, see vite.config.js); a production
+// build has no dev server to proxy through, so it needs the live backend's
+// absolute URL, injected via VITE_API_BASE_URL at build time.
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: '/api/v1',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token;
     if (token) headers.set('Authorization', `Bearer ${token}`);

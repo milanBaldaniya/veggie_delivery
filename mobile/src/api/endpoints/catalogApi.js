@@ -1,3 +1,3 @@
 import axiosClient from '../axiosClient';
 
-export const getProducts = () => axiosClient.get('/products');
+export const getProducts = (params) => axiosClient.get('/products', { params });

@@ -21,16 +21,20 @@ const userSchema = new Schema(
   {
     role: { type: String, enum: Object.values(ROLES), default: ROLES.CUSTOMER },
     name: { type: String, trim: true, default: null },
-    // Customers sign in with Google (email + googleId); staff (admin panel) sign
-    // in by email + password. email/phone/googleId are unique+sparse so records
-    // missing any one of them don't trip the unique index.
+    // Customers sign in with Google via Firebase Auth (email + firebaseUid);
+    // staff (admin panel) sign in by email + password. email/phone/firebaseUid
+    // are unique+sparse so records missing any one of them don't trip the
+    // unique index — deliberately NO `default: null` here: Mongoose would
+    // write a literal `null` into every document missing the field, and a
+    // sparse index only skips fields that are truly absent, not ones set to
+    // null, so a second null would collide as a duplicate key.
     // unique already builds an index — adding index: true too triggers
     // Mongoose's "Duplicate schema index" warning at connect time.
-    email: { type: String, unique: true, sparse: true, lowercase: true, trim: true, default: null },
-    googleId: { type: String, unique: true, sparse: true, default: null },
+    email: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
+    firebaseUid: { type: String, unique: true, sparse: true },
     // Delivery contact number, collected during profile setup (Google gives us
     // an email, not a phone). Unique+sparse so two accounts can't share one.
-    phone: { type: String, unique: true, sparse: true, trim: true, default: null },
+    phone: { type: String, unique: true, sparse: true, trim: true },
     avatar: { type: String, default: null },
     passwordHash: { type: String, default: null },
 

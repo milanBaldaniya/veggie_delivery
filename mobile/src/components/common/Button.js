@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { Pressable, Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { colors, spacing, radius, typography } from '../../theme';
 
 const VARIANT_STYLES = {
@@ -9,6 +9,10 @@ const VARIANT_STYLES = {
   ghost: { backgroundColor: 'transparent', textColor: colors.primary },
   // For use on colored (e.g. primary-tinted) backgrounds where a solid primary button would blend in.
   light: { backgroundColor: colors.surface, textColor: colors.primary },
+  // Neutral white surface with dark text — matches third-party auth button
+  // conventions (e.g. "Continue with Google") where the brand mark supplies
+  // the color, not the button chrome.
+  neutral: { backgroundColor: colors.surface, textColor: colors.textPrimary, borderColor: colors.border },
 };
 
 export default function Button({
@@ -17,6 +21,8 @@ export default function Button({
   variant = 'primary',
   disabled = false,
   loading = false,
+  icon: Icon,
+  leadingIcon,
   style,
   testID,
 }) {
@@ -42,7 +48,11 @@ export default function Button({
       {loading ? (
         <ActivityIndicator color={variantStyle.textColor} />
       ) : (
-        <Text style={[typography.button, { color: variantStyle.textColor }]}>{title}</Text>
+        <View style={styles.content}>
+          {leadingIcon ? <View style={styles.leadingIcon}>{leadingIcon}</View> : null}
+          <Text style={[typography.button, { color: variantStyle.textColor }]}>{title}</Text>
+          {Icon ? <Icon size={20} color={variantStyle.textColor} style={styles.icon} /> : null}
+        </View>
       )}
     </Pressable>
   );
@@ -55,5 +65,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    marginLeft: spacing.xs,
+  },
+  leadingIcon: {
+    marginRight: spacing.sm,
   },
 });

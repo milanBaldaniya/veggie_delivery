@@ -1,12 +1,15 @@
 node_modules/
 .env
+.env.production
 *.log
 npm-debug.log*
 
 # Backend
 backend/dist/
+backend/firebase-service-account.json
 
 # Mobile - React Native
+mobile/android/build/
 mobile/android/app/build/
 mobile/android/.gradle/
 mobile/android/local.properties

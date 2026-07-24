@@ -8,3 +8,6 @@ export { default as Modal } from './Modal';
 export { default as ListItem } from './ListItem';
 export { default as Badge } from './Badge';
 export { default as PlaceholderScreen } from './PlaceholderScreen';
+export { default as VeggieIcon } from './VeggieIcon';
+export { default as GoogleIcon } from './GoogleIcon';
+export { default as VeggieScene } from './VeggieScene';

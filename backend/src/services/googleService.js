@@ -1,39 +1,33 @@
-const { OAuth2Client } = require('google-auth-library');
+const { getFirebaseApp } = require('../config/firebase');
 const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 
-const client = new OAuth2Client();
-
 /**
- * Verifies a Google-issued ID token and returns the trusted profile claims.
- * Throws a 401 ApiError if the token is invalid, expired, or was issued for a
- * client ID we don't accept.
+ * Verifies a Firebase ID token (issued after the mobile app signs the user in
+ * to Firebase with their Google credential) and returns the trusted profile
+ * claims. Throws a 401 ApiError if the token is invalid or expired.
  */
 async function verifyIdToken(idToken) {
-  if (!env.google.clientIds.length) {
+  if (!env.firebase.isConfigured) {
     throw new ApiError(500, 'Google Sign-In is not configured on the server');
   }
 
-  let payload;
+  let decoded;
   try {
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: env.google.clientIds,
-    });
-    payload = ticket.getPayload();
+    decoded = await getFirebaseApp().auth().verifyIdToken(idToken);
   } catch {
     throw ApiError.unauthorized('Invalid Google sign-in token');
   }
 
-  if (!payload?.email || !payload.email_verified) {
+  if (!decoded.email || !decoded.email_verified) {
     throw ApiError.unauthorized('Google account email is not verified');
   }
 
   return {
-    googleId: payload.sub,
-    email: payload.email,
-    name: payload.name || null,
-    picture: payload.picture || null,
+    firebaseUid: decoded.uid,
+    email: decoded.email,
+    name: decoded.name || null,
+    picture: decoded.picture || null,
   };
 }
 

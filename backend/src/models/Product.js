@@ -7,6 +7,10 @@ const { Schema } = mongoose;
 const productSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, unique: true },
+    // Alternate names/spellings a customer might search by — regional
+    // language names (e.g. Gujarati "Tameta"/"Tamatar" for Tomato),
+    // common misspellings, etc. Matched alongside `name` on search.
+    aliases: { type: [String], default: [] },
     // Emoji stand-in for a product image until real images are uploaded.
     emoji: { type: String, default: '🥬' },
     // Optional real image URL (admin upload); falls back to emoji when null.
@@ -26,6 +30,7 @@ productSchema.methods.toPublicJSON = function toPublicJSON() {
   return {
     id: this._id,
     name: this.name,
+    aliases: this.aliases,
     emoji: this.emoji,
     imageUrl: this.imageUrl,
     category: this.category,

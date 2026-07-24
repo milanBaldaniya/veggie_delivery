@@ -3,6 +3,7 @@ const { PRODUCT_UNITS } = require('../../config/constants');
 
 const createProductSchema = yup.object({
   name: yup.string().trim().min(2, 'Name is too short').required('Name is required'),
+  aliases: yup.array().of(yup.string().trim()).default([]),
   emoji: yup.string().trim().default('🥬'),
   imageUrl: yup.string().trim().nullable(),
   category: yup.string().trim().default('Vegetable'),
@@ -16,6 +17,7 @@ const createProductSchema = yup.object({
 // All fields optional on update.
 const updateProductSchema = yup.object({
   name: yup.string().trim().min(2, 'Name is too short'),
+  aliases: yup.array().of(yup.string().trim()),
   emoji: yup.string().trim(),
   imageUrl: yup.string().trim().nullable(),
   category: yup.string().trim(),

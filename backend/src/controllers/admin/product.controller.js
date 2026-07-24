@@ -8,7 +8,10 @@ const Product = require('../../models/Product');
 const listProducts = asyncHandler(async (req, res) => {
   const { search } = req.query;
   const filter = {};
-  if (search) filter.name = { $regex: search, $options: 'i' };
+  if (search) {
+    const regex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    filter.$or = [{ name: regex }, { aliases: regex }];
+  }
 
   const products = await Product.find(filter).sort({ sortOrder: 1, name: 1 });
   sendSuccess(res, { data: { products: products.map((p) => p.toPublicJSON()) } });

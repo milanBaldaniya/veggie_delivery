@@ -9,26 +9,27 @@ const { USER_STATUS, ROLES } = require('../config/constants');
 const googleLogin = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
 
-  // Verifies the token's signature, expiry, and audience against our client IDs.
+  // Verifies the Firebase ID token's signature and expiry via firebase-admin.
   const profile = await googleService.verifyIdToken(idToken);
 
-  // Match an existing account by Google id first, then fall back to email so a
-  // customer who previously signed in another way is linked, not duplicated.
+  // Match an existing account by Firebase uid first, then fall back to email
+  // so a customer who previously signed in another way is linked, not
+  // duplicated.
   let user = await User.findOne({
-    $or: [{ googleId: profile.googleId }, { email: profile.email }],
+    $or: [{ firebaseUid: profile.firebaseUid }, { email: profile.email }],
   });
 
   if (!user) {
     user = new User({
       role: ROLES.CUSTOMER,
-      googleId: profile.googleId,
+      firebaseUid: profile.firebaseUid,
       email: profile.email,
       name: profile.name,
       avatar: profile.picture,
     });
   } else {
     // Backfill Google fields on an account first seen via another channel.
-    if (!user.googleId) user.googleId = profile.googleId;
+    if (!user.firebaseUid) user.firebaseUid = profile.firebaseUid;
     if (!user.name && profile.name) user.name = profile.name;
     if (!user.avatar && profile.picture) user.avatar = profile.picture;
   }

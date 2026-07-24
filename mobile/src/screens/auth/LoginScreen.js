@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button } from '../../components/common';
-import { colors, spacing, typography } from '../../theme';
+import { CircleAlert, ShieldCheck } from 'lucide-react-native';
+import { Button, GoogleIcon, VeggieScene } from '../../components/common';
+import { colors, spacing, radius, typography } from '../../theme';
 import { googleLogin } from '../../redux/slices/authSlice';
 
 export default function LoginScreen() {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
   const loginStatus = useSelector((state) => state.auth.loginStatus);
   const loginError = useSelector((state) => state.auth.loginError);
 
@@ -18,17 +21,35 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log in</Text>
-      <Text style={styles.subtitle}>Continue with your Google account to get fresh veggies delivered.</Text>
+      <View style={[styles.stage, { paddingTop: insets.top + spacing.md }]}>
+        <VeggieScene width={380} />
+      </View>
 
-      <Button
-        title="Continue with Google"
-        onPress={handleGoogleLogin}
-        loading={loginStatus === 'loading'}
-        style={styles.button}
-      />
+      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
+        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.subtitle}>Log in with Google to get fresh veggies delivered to your door.</Text>
 
-      {loginError ? <Text style={styles.error}>{loginError}</Text> : null}
+        <Button
+          title="Continue with Google"
+          variant="neutral"
+          leadingIcon={<GoogleIcon size={18} />}
+          onPress={handleGoogleLogin}
+          loading={loginStatus === 'loading'}
+          style={styles.button}
+        />
+
+        {loginError ? (
+          <View style={styles.errorBanner}>
+            <CircleAlert size={16} color={colors.danger} />
+            <Text style={styles.errorText}>{loginError}</Text>
+          </View>
+        ) : (
+          <View style={styles.trustRow}>
+            <ShieldCheck size={14} color={colors.textSecondary} />
+            <Text style={styles.trustText}>Secure sign-in, powered by Google</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -37,25 +58,58 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
+  },
+  stage: {
+    flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: spacing.lg,
+  },
+  footer: {
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
   },
   title: {
     ...typography.h1,
-    marginBottom: spacing.xs,
+    fontSize: 26,
   },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
+    marginTop: spacing.xs,
     marginBottom: spacing.lg,
   },
   button: {
-    marginTop: spacing.sm,
+    width: '100%',
   },
-  error: {
+  trustRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.md,
+  },
+  trustText: {
+    ...typography.caption,
+    marginLeft: spacing.xs,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: `${colors.danger}14`,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
+  },
+  errorText: {
     ...typography.caption,
     color: colors.danger,
-    marginTop: spacing.md,
+    marginLeft: spacing.xs,
+    flexShrink: 1,
     textAlign: 'center',
   },
 });

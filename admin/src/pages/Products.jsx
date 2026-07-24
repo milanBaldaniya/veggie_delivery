@@ -47,7 +47,14 @@ export default function Products() {
   const openCreate = () => {
     setEditing(null);
     form.resetFields();
-    form.setFieldsValue({ emoji: '🥬', category: 'Vegetable', unit: 'kg', inStock: true, sortOrder: 100 });
+    form.setFieldsValue({
+      emoji: '🥬',
+      category: 'Vegetable',
+      unit: 'kg',
+      inStock: true,
+      sortOrder: 100,
+      aliases: [],
+    });
     setModalOpen(true);
   };
 
@@ -100,7 +107,12 @@ export default function Products() {
             <Avatar shape="square" src={r.imageUrl || undefined} style={{ background: '#f0f7f0' }}>
               {!r.imageUrl && <span style={{ fontSize: 18 }}>{r.emoji}</span>}
             </Avatar>
-            <span style={{ fontWeight: 600 }}>{name}</span>
+            <div>
+              <div style={{ fontWeight: 600 }}>{name}</div>
+              {r.aliases?.length ? (
+                <div style={{ fontSize: 12, color: '#888' }}>{r.aliases.join(', ')}</div>
+              ) : null}
+            </div>
           </Space>
         ),
         sorter: (a, b) => a.name.localeCompare(b.name),
@@ -201,6 +213,19 @@ export default function Products() {
             rules={[{ required: true, message: 'Name is required' }, { min: 2, message: 'Too short' }]}
           >
             <Input placeholder="e.g. Tomato" />
+          </Form.Item>
+
+          <Form.Item
+            name="aliases"
+            label="Other names"
+            tooltip="Alternate names or spellings customers might search by — regional language names, common misspellings, etc."
+          >
+            <Select
+              mode="tags"
+              open={false}
+              tokenSeparators={[',']}
+              placeholder="e.g. Tameta, Tamatar — press Enter to add"
+            />
           </Form.Item>
 
           <Space style={{ display: 'flex' }} align="start">

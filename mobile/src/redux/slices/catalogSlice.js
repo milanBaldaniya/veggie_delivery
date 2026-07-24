@@ -5,12 +5,14 @@ function extractErrorMessage(err) {
   return err.response?.data?.message || err.message || 'Something went wrong';
 }
 
+// page 1 replaces the list (fresh load / new search); page > 1 appends
+// (infinite scroll). See extraReducers below for which one runs.
 export const fetchProducts = createAsyncThunk(
   'catalog/fetchProducts',
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, search = '' } = {}, { rejectWithValue }) => {
     try {
-      const { data } = await catalogApi.getProducts();
-      return data.data.products;
+      const { data } = await catalogApi.getProducts({ page, search, limit: 10 });
+      return { ...data.data, search };
     } catch (err) {
       return rejectWithValue(extractErrorMessage(err));
     }
@@ -19,7 +21,11 @@ export const fetchProducts = createAsyncThunk(
 
 const initialState = {
   products: [],
-  status: 'idle', // idle | loading | succeeded | error
+  page: 1,
+  hasMore: true,
+  search: '',
+  status: 'idle', // idle | loading | succeeded | error — initial/reset load
+  loadingMore: false, // pagination (page > 1) load
   error: null,
 };
 
@@ -29,16 +35,27 @@ const catalogSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProducts.pending, (state) => {
-        state.status = 'loading';
-        state.error = null;
+      .addCase(fetchProducts.pending, (state, action) => {
+        const isFirstPage = (action.meta.arg?.page || 1) === 1;
+        if (isFirstPage) {
+          state.status = 'loading';
+          state.error = null;
+        } else {
+          state.loadingMore = true;
+        }
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
+        const { products, page, hasMore, search } = action.payload;
         state.status = 'succeeded';
-        state.products = action.payload;
+        state.loadingMore = false;
+        state.page = page;
+        state.hasMore = hasMore;
+        state.search = search;
+        state.products = page === 1 ? products : [...state.products, ...products];
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'error';
+        state.loadingMore = false;
         state.error = action.payload;
       });
   },
