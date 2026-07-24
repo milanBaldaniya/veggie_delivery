@@ -9,17 +9,24 @@ import { AUTH_ROUTES } from '../constants/routes';
 const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-  // Resumes straight into ProfileSetup on app restart if the user signed in
-  // with Google but never completed their profile.
-  const initialRouteName =
-    isAuthenticated && !user?.isProfileComplete ? AUTH_ROUTES.PROFILE_SETUP : AUTH_ROUTES.SPLASH;
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
+  // `initialRouteName` only applies at mount time — it can't react to a
+  // mid-session login, so which *screens exist* has to change instead of
+  // just which one is "initial". React Navigation swaps the whole stack
+  // (and navigates automatically) whenever the screen list itself changes,
+  // which is what actually reacts to isAuthenticated flipping true right
+  // after a successful Google sign-in.
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRouteName}>
-      <Stack.Screen name={AUTH_ROUTES.SPLASH} component={SplashScreen} />
-      <Stack.Screen name={AUTH_ROUTES.LOGIN} component={LoginScreen} />
-      <Stack.Screen name={AUTH_ROUTES.PROFILE_SETUP} component={ProfileSetupScreen} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {isAuthenticated ? (
+        <Stack.Screen name={AUTH_ROUTES.PROFILE_SETUP} component={ProfileSetupScreen} />
+      ) : (
+        <>
+          <Stack.Screen name={AUTH_ROUTES.SPLASH} component={SplashScreen} />
+          <Stack.Screen name={AUTH_ROUTES.LOGIN} component={LoginScreen} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

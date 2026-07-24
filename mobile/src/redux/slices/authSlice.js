@@ -2,8 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as authApi from '../../api/endpoints/authApi';
 import { signInWithGoogle, signOutFromGoogle } from '../../services/googleAuth';
 
+// Defensive against non-Error rejections (native modules occasionally reject
+// with a bare string, null, or undefined instead of a proper Error). Without
+// the optional chaining on `err` itself, a null/undefined err would throw
+// *inside* this function, which — since it's called from inside a catch
+// block — replaces the real error with a generic one that bypasses
+// rejectWithValue entirely (Redux Toolkit routes it to action.error instead
+// of action.payload), silently hiding it from the UI.
 function extractErrorMessage(err) {
-  return err.response?.data?.message || err.message || 'Something went wrong';
+  if (typeof err === 'string') return err;
+  return err?.response?.data?.message || err?.message || 'Something went wrong';
 }
 
 // Runs the native Google flow, then exchanges the ID token for our own JWTs.
