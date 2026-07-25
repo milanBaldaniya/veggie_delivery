@@ -8,6 +8,7 @@ import {
   Space,
   Tag,
   Button,
+  Popconfirm,
   Drawer,
   Descriptions,
   Typography,
@@ -15,7 +16,7 @@ import {
   Row,
   Col,
 } from 'antd';
-import { SearchOutlined, PrinterOutlined, EyeOutlined } from '@ant-design/icons';
+import { SearchOutlined, PrinterOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import PageHeader from '../components/PageHeader';
 import useDebounce from '../hooks/useDebounce';
@@ -26,6 +27,7 @@ import {
   useGetOrdersQuery,
   useGetOrderBuildingsQuery,
   useUpdateOrderStatusMutation,
+  useDeleteOrderMutation,
 } from '../services/orderApi';
 
 const { RangePicker } = DatePicker;
@@ -48,9 +50,20 @@ export default function Orders() {
   const { data, isLoading, isFetching } = useGetOrdersQuery(queryArgs);
   const { data: buildings = [] } = useGetOrderBuildingsQuery();
   const [updateStatus, { isLoading: updatingStatus }] = useUpdateOrderStatusMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
 
   const orders = data?.orders || [];
   const total = data?.meta?.total || 0;
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteOrder(id).unwrap();
+      message.success('Order deleted');
+      if (selected?.id === id) setSelected(null);
+    } catch (err) {
+      message.error(err?.data?.message || 'Could not delete order');
+    }
+  };
 
   const setFilter = (patch) => {
     setPage(1);
@@ -106,6 +119,15 @@ export default function Orders() {
             onChange={(v) => handleStatusChange(r, v)}
           />
           <Button size="small" icon={<EyeOutlined />} onClick={() => setSelected(r)} />
+          <Popconfirm
+            title="Delete this order?"
+            description="This can't be undone. The customer's weekly bill will be recalculated."
+            okText="Delete"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => handleDelete(r.id)}
+          >
+            <Button size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
         </Space>
       ),
     },
@@ -189,9 +211,20 @@ export default function Orders() {
         onClose={() => setSelected(null)}
         extra={
           selected && (
-            <Button icon={<PrinterOutlined />} onClick={() => printInvoice(selected)}>
-              Print Invoice
-            </Button>
+            <Space>
+              <Button icon={<PrinterOutlined />} onClick={() => printInvoice(selected)}>
+                Print Invoice
+              </Button>
+              <Popconfirm
+                title="Delete this order?"
+                description="This can't be undone. The customer's weekly bill will be recalculated."
+                okText="Delete"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => handleDelete(selected.id)}
+              >
+                <Button danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </Space>
           )
         }
       >

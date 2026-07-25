@@ -80,4 +80,18 @@ const listOrderBuildings = asyncHandler(async (req, res) => {
   sendSuccess(res, { data: { buildings: buildings.filter(Boolean).sort() } });
 });
 
-module.exports = { listOrders, getOrder, updateStatus, listOrderBuildings };
+const deleteOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findByIdAndDelete(req.params.id);
+  if (!order) throw ApiError.notFound('Order not found');
+
+  // Keep the week's bill total in sync now that this order no longer exists.
+  try {
+    await billingService.recomputeWeeklyBill(order.user, order.createdAt);
+  } catch (err) {
+    logger.error(`Weekly bill recompute failed for deleted order ${order._id}: ${err.message}`);
+  }
+
+  sendSuccess(res, { message: 'Order deleted', data: { id: req.params.id } });
+});
+
+module.exports = { listOrders, getOrder, updateStatus, listOrderBuildings, deleteOrder };

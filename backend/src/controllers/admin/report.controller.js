@@ -3,25 +3,16 @@ const { sendSuccess } = require('../../utils/ApiResponse');
 const Order = require('../../models/Order');
 const Expense = require('../../models/Expense');
 const { ORDER_STATUS } = require('../../config/constants');
+const { dayBounds, formatDateKey, TZ } = require('../../utils/billingPeriod');
 
 // Shared date-range parser: defaults to the last 30 days.
 function rangeFrom(query) {
   const to = query.to ? new Date(query.to) : new Date();
-  const from = query.from ? new Date(query.from) : new Date(to.getTime() - 29 * 86400000);
-  from.setHours(0, 0, 0, 0);
+  const fromRaw = query.from ? new Date(query.from) : new Date(to.getTime() - 29 * 86400000);
+  const from = dayBounds(fromRaw).start;
   return { from, to };
 }
 const NOT_CANCELLED = { status: { $ne: ORDER_STATUS.CANCELLED } };
-
-function dayBounds(dateStr) {
-  // Defaults to today when no date is supplied.
-  const base = dateStr ? new Date(dateStr) : new Date();
-  const start = new Date(base);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return { start, end };
-}
 
 // Total quantity required per vegetable for a given day — the shopping list the
 // admin buys against at ~4 AM. Aggregates every non-cancelled order that day.
@@ -58,7 +49,7 @@ const dailyPurchase = asyncHandler(async (req, res) => {
 
   sendSuccess(res, {
     data: {
-      date: start.toISOString().slice(0, 10),
+      date: formatDateKey(start),
       items,
       totalEstimatedCost: Math.round(items.reduce((s, i) => s + i.estimatedCost, 0) * 100) / 100,
       totalProducts: items.length,
@@ -73,7 +64,7 @@ const salesReport = asyncHandler(async (req, res) => {
     { $match: { createdAt: { $gte: from, $lte: to }, ...NOT_CANCELLED } },
     {
       $group: {
-        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: TZ } },
         orders: { $sum: 1 },
         revenue: { $sum: '$totalAmount' },
       },

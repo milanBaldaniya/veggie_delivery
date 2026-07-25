@@ -3,18 +3,17 @@ const { sendSuccess } = require('../../utils/ApiResponse');
 const Order = require('../../models/Order');
 const User = require('../../models/User');
 const Bill = require('../../models/Bill');
+const Building = require('../../models/Building');
 const { ROLES, ORDER_STATUS, BILL_STATUS, BILL_PERIOD } = require('../../config/constants');
-const { weekBounds, getISOWeek } = require('../../utils/billingPeriod');
+const { weekBounds, getISOWeek, dayBounds, formatDateKey, TZ } = require('../../utils/billingPeriod');
 
 function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+  return dayBounds(new Date()).start;
 }
 function daysAgo(n) {
-  const d = startOfToday();
-  d.setDate(d.getDate() - n);
-  return d;
+  // Plain millisecond subtraction from an IST-midnight instant still lands on
+  // an IST-midnight n days earlier since Asia/Kolkata has no DST.
+  return new Date(startOfToday().getTime() - n * 24 * 60 * 60 * 1000);
 }
 
 // Revenue counts money from orders that weren't cancelled.
@@ -34,7 +33,7 @@ const getStats = asyncHandler(async (req, res) => {
     statusAgg,
     totalUsers,
     totalWatchmen,
-    buildings,
+    totalBuildings,
     recentOrders,
     salesSeries,
     billingAgg,
@@ -48,14 +47,14 @@ const getStats = asyncHandler(async (req, res) => {
     Order.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     User.countDocuments({ role: ROLES.CUSTOMER }),
     User.countDocuments({ role: ROLES.WATCHMAN }),
-    User.distinct('address.building', { role: ROLES.CUSTOMER }),
+    Building.countDocuments({}),
     Order.find({}).sort({ createdAt: -1 }).limit(8),
     // Per-day orders + revenue for the last 7 days.
     Order.aggregate([
       { $match: { createdAt: { $gte: weekStart } } },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: TZ } },
           orders: { $sum: 1 },
           revenue: {
             $sum: { $cond: [{ $ne: ['$status', ORDER_STATUS.CANCELLED] }, '$totalAmount', 0] },
@@ -108,7 +107,7 @@ const getStats = asyncHandler(async (req, res) => {
   const salesGraph = [];
   for (let i = 6; i >= 0; i -= 1) {
     const d = daysAgo(i);
-    const key = d.toISOString().slice(0, 10);
+    const key = formatDateKey(d);
     const entry = seriesByDate.get(key);
     salesGraph.push({ date: key, orders: entry?.orders || 0, revenue: entry?.revenue || 0 });
   }
@@ -154,7 +153,7 @@ const getStats = asyncHandler(async (req, res) => {
         monthOrders,
         revenue: revenueAgg[0]?.total || 0,
         pendingPayments: billing.pendingAmount,
-        totalBuildings: buildings.filter(Boolean).length,
+        totalBuildings,
         totalUsers,
         totalWatchmen,
       },

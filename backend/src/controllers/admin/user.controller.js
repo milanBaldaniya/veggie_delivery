@@ -65,4 +65,21 @@ const setStatus = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { listUsers, getUser, setStatus };
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findOneAndDelete({ _id: req.params.id, role: ROLES.CUSTOMER });
+  if (!user) throw ApiError.notFound('User not found');
+
+  // Cascade: an orphaned order/bill would still count toward dashboard totals
+  // and pending amounts even with its owner gone, so remove them too.
+  const [orders, bills] = await Promise.all([
+    Order.deleteMany({ user: user._id }),
+    Bill.deleteMany({ user: user._id }),
+  ]);
+
+  sendSuccess(res, {
+    message: 'User deleted',
+    data: { id: req.params.id, ordersDeleted: orders.deletedCount, billsDeleted: bills.deletedCount },
+  });
+});
+
+module.exports = { listUsers, getUser, setStatus, deleteUser };

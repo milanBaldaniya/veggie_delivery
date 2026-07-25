@@ -9,5 +9,6 @@ router.get('/', controller.listOrders);
 router.get('/buildings', controller.listOrderBuildings);
 router.get('/:id', controller.getOrder);
 router.patch('/:id/status', validate(updateStatusSchema), controller.updateStatus);
+router.delete('/:id', controller.deleteOrder);
 
 module.exports = router;

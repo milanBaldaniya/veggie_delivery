@@ -2,15 +2,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const { sendSuccess } = require('../../utils/ApiResponse');
 const Order = require('../../models/Order');
 const { ORDER_STATUS } = require('../../config/constants');
-
-function dayBounds(dateStr) {
-  const base = dateStr ? new Date(dateStr) : new Date();
-  const start = new Date(base);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return { start, end };
-}
+const { dayBounds, formatDateKey } = require('../../utils/billingPeriod');
 
 // Customer-wise packing lists for a day: each order with its items so the team
 // can pack per customer. Grouped by society for society-wise delivery.
@@ -36,7 +28,7 @@ const packingList = asyncHandler(async (req, res) => {
   }));
 
   sendSuccess(res, {
-    data: { date: start.toISOString().slice(0, 10), count: lists.length, lists },
+    data: { date: formatDateKey(start), count: lists.length, lists },
   });
 });
 

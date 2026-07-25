@@ -15,12 +15,23 @@ import {
   Row,
   Col,
 } from 'antd';
-import { SearchOutlined, EyeOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  EyeOutlined,
+  StopOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 import PageHeader from '../components/PageHeader';
 import useDebounce from '../hooks/useDebounce';
 import { USER_STATUS_META, ORDER_STATUS_META, PAYMENT_STATUS_META } from '../utils/constants';
 import { formatCurrency, formatAddress, formatDate, formatDateTime } from '../utils/format';
-import { useGetUsersQuery, useGetUserQuery, useSetUserStatusMutation } from '../services/userApi';
+import {
+  useGetUsersQuery,
+  useGetUserQuery,
+  useSetUserStatusMutation,
+  useDeleteUserMutation,
+} from '../services/userApi';
 
 export default function Users() {
   const { message } = App.useApp();
@@ -33,6 +44,7 @@ export default function Users() {
 
   const { data, isLoading, isFetching } = useGetUsersQuery({ page, limit, search: search || undefined, status });
   const [setUserStatus] = useSetUserStatusMutation();
+  const [deleteUser] = useDeleteUserMutation();
   const { data: detail, isFetching: detailLoading } = useGetUserQuery(detailId, { skip: !detailId });
 
   const users = data?.users || [];
@@ -44,6 +56,16 @@ export default function Users() {
       message.success(next === 'ACTIVE' ? 'User unblocked' : 'User blocked');
     } catch {
       message.error('Could not update user');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteUser(id).unwrap();
+      message.success('User deleted');
+      if (detailId === id) setDetailId(null);
+    } catch (err) {
+      message.error(err?.data?.message || 'Could not delete user');
     }
   };
 
@@ -80,6 +102,15 @@ export default function Users() {
             >
               {u.status === 'ACTIVE' ? 'Block' : 'Unblock'}
             </Button>
+          </Popconfirm>
+          <Popconfirm
+            title="Delete this user?"
+            description="This can't be undone. Their orders and billing history will be deleted too."
+            okText="Delete"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => handleDelete(u.id)}
+          >
+            <Button size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
       ),

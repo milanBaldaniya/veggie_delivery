@@ -30,11 +30,25 @@ export const orderApi = baseApi.injectEndpoints({
         method: 'PATCH',
         body: { status },
       }),
+      // Cancelling an order recomputes its week's bill server-side, so the
+      // Billing page's cache needs invalidating too, not just Order/Dashboard.
+      // 'Bill' (unqualified, no id) is a type-wide wildcard: it invalidates the
+      // bills LIST *and* any open bill-detail query, unlike { type:'Bill',
+      // id:'LIST' } which only matches the list and leaves an open detail
+      // drawer showing the pre-delete total.
       invalidatesTags: (r, e, arg) => [
         { type: 'Order', id: arg.id },
         { type: 'Order', id: 'LIST' },
+        'Bill',
         'Dashboard',
       ],
+    }),
+    deleteOrder: builder.mutation({
+      query: (id) => ({ url: `/admin/orders/${id}`, method: 'DELETE' }),
+      // Deleting an order recomputes (or removes) its week's bill
+      // server-side — invalidate Bill too, or the Billing page keeps
+      // showing stale totals until a manual page reload.
+      invalidatesTags: [{ type: 'Order', id: 'LIST' }, 'Bill', 'Dashboard'],
     }),
   }),
 });
@@ -44,4 +58,5 @@ export const {
   useGetOrderQuery,
   useGetOrderBuildingsQuery,
   useUpdateOrderStatusMutation,
+  useDeleteOrderMutation,
 } = orderApi;

@@ -57,6 +57,15 @@ async function recomputeWeeklyBill(userId, ref = new Date()) {
   // No orders this week and no bill yet — don't create an empty one.
   if (!bill && count === 0) return null;
 
+  // Every order in an existing bill's week got cancelled/deleted. If nothing
+  // was ever paid against it, the bill has no reason to exist any more —
+  // leaving it would show up as a permanent ₹0 "Pending" row. A bill with a
+  // recorded payment is kept (zeroed out below) so that payment isn't lost.
+  if (bill && count === 0 && bill.paidAmount <= 0) {
+    await Bill.deleteOne({ _id: bill._id });
+    return null;
+  }
+
   const { week, year } = getISOWeek(start);
 
   if (!bill) {
