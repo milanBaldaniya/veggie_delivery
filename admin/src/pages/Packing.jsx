@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, DatePicker, Button, Space, Empty, Tag, List, Typography, App, Popconfirm, Row, Col, Statistic } from 'antd';
-import { PrinterOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Card, DatePicker, Button, Space, Empty, Tag, Typography, App, Popconfirm, Row, Col } from 'antd';
+import { PrinterOutlined, CheckCircleOutlined, ShoppingCartOutlined, HomeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
 import { ORDER_STATUS_META, BRAND } from '../utils/constants';
 import { formatWeight } from '../utils/format';
 import { useGetPackingQuery, useCloseDayMutation } from '../services/packingApi';
@@ -86,14 +87,22 @@ export default function Packing() {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} md={6}>
-          <Card>
-            <Statistic title="Orders to pack" value={data?.count || 0} loading={isLoading} />
-          </Card>
+          <StatCard
+            title="Orders to pack"
+            value={data?.count || 0}
+            icon={<ShoppingCartOutlined />}
+            color="#2E7D32"
+            loading={isLoading}
+          />
         </Col>
         <Col xs={12} md={6}>
-          <Card>
-            <Statistic title="Societies" value={Object.keys(byBuilding).length} loading={isLoading} />
-          </Card>
+          <StatCard
+            title="Societies"
+            value={Object.keys(byBuilding).length}
+            icon={<HomeOutlined />}
+            color="#1677ff"
+            loading={isLoading}
+          />
         </Col>
       </Row>
 
@@ -105,41 +114,73 @@ export default function Packing() {
         </Card>
       ) : (
         Object.entries(byBuilding).map(([building, group]) => (
-          <Card
-            key={building}
-            title={<Space><Typography.Text strong>{building}</Typography.Text><Tag>{group.length}</Tag></Space>}
-            style={{ marginBottom: 16 }}
-          >
-            <List
-              dataSource={group}
-              renderItem={(l) => (
-                <List.Item>
-                  <List.Item.Meta
-                    title={
-                      <Space>
-                        <span>{l.customerName || '—'}</span>
-                        <Typography.Text type="secondary">
-                          Flat {l.flat || '—'}{l.wing ? `, Wing ${l.wing}` : ''} · #{l.shortId}
-                        </Typography.Text>
-                        <Tag color={ORDER_STATUS_META[l.status]?.color}>{ORDER_STATUS_META[l.status]?.label}</Tag>
-                      </Space>
-                    }
-                    description={
-                      <Space wrap>
-                        {l.items.map((i, idx) => (
-                          <Tag key={idx}>
-                            {i.emoji} {i.name} · {formatWeight(i.grams)}
-                          </Tag>
-                        ))}
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
+          <Card key={building} styles={{ body: { padding: 0 } }} style={{ marginBottom: 16 }}>
+            <div style={styles.buildingHeader}>
+              <Space size={10}>
+                <HomeOutlined style={{ color: BRAND.primary, fontSize: 16 }} />
+                <Typography.Text strong style={{ fontSize: 15 }}>
+                  {building}
+                </Typography.Text>
+              </Space>
+              <Tag>{group.length} order{group.length > 1 ? 's' : ''}</Tag>
+            </div>
+
+            <div style={styles.orderList}>
+              {group.map((l, idx) => (
+                <div
+                  key={l.orderId}
+                  style={{
+                    ...styles.orderRow,
+                    borderBottom: idx === group.length - 1 ? 'none' : '1px solid #f0f0f0',
+                  }}
+                >
+                  <div style={styles.orderTop}>
+                    <div style={styles.orderTopLeft}>
+                      <Typography.Text strong>{l.customerName || '—'}</Typography.Text>
+                      <Typography.Text type="secondary" style={styles.orderMeta}>
+                        Flat {l.flat || '—'}
+                        {l.wing ? `, Wing ${l.wing}` : ''} · #{l.shortId}
+                      </Typography.Text>
+                    </div>
+                    <Tag color={ORDER_STATUS_META[l.status]?.color} style={{ marginInlineEnd: 0, flexShrink: 0 }}>
+                      {ORDER_STATUS_META[l.status]?.label}
+                    </Tag>
+                  </div>
+                  <Space size={[8, 8]} wrap style={styles.itemTags}>
+                    {l.items.map((i, itemIdx) => (
+                      <Tag key={itemIdx} bordered={false} style={styles.itemTag}>
+                        {i.emoji} {i.name} · {formatWeight(i.grams)}
+                      </Tag>
+                    ))}
+                  </Space>
+                </div>
+              ))}
+            </div>
           </Card>
         ))
       )}
     </>
   );
 }
+
+const styles = {
+  buildingHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '14px 20px',
+    borderBottom: '1px solid #f0f0f0',
+  },
+  orderList: { padding: '0 20px' },
+  orderRow: { padding: '14px 0' },
+  orderTop: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  orderTopLeft: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 },
+  orderMeta: { fontSize: 13 },
+  itemTags: { marginTop: 10 },
+  itemTag: { background: '#f5f5f5', color: 'rgba(0, 0, 0, 0.75)' },
+};

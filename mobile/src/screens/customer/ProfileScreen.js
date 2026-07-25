@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, Alert, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button } from '../../components/common';
+import { Pencil } from 'lucide-react-native';
+import { Button, Header } from '../../components/common';
 import { colors, spacing, radius, typography } from '../../theme';
 import { formatAddress } from '../../utils/format';
 import { logout } from '../../redux/slices/authSlice';
 import { clearCart } from '../../redux/slices/cartSlice';
+import { CUSTOMER_ROUTES } from '../../constants/routes';
 
 function Field({ label, value }) {
   return (
@@ -17,9 +18,8 @@ function Field({ label, value }) {
   );
 }
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const dispatch = useDispatch();
-  const insets = useSafeAreaInsets();
   const user = useSelector((state) => state.auth.user);
 
   const handleLogout = () => {
@@ -39,10 +39,15 @@ export default function ProfileScreen() {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : '🙂';
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.topBar}>
-        <Text style={styles.title}>Profile</Text>
-      </View>
+    <View style={styles.container}>
+      <Header
+        title="Profile"
+        right={
+          <Pressable onPress={() => navigation.navigate(CUSTOMER_ROUTES.EDIT_PROFILE)} hitSlop={10}>
+            <Pencil size={20} color={colors.primary} />
+          </Pressable>
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.avatarBlock}>
@@ -50,6 +55,7 @@ export default function ProfileScreen() {
             <Text style={styles.avatarText}>{initial}</Text>
           </View>
           <Text style={styles.name}>{user?.name}</Text>
+          {user?.email ? <Text style={styles.email}>{user.email}</Text> : null}
           <Text style={styles.phone}>{user?.phone}</Text>
         </View>
 
@@ -70,14 +76,6 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  topBar: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  title: { ...typography.h2 },
   content: { padding: spacing.lg },
   avatarBlock: { alignItems: 'center', marginBottom: spacing.lg },
   avatar: {
@@ -91,6 +89,7 @@ const styles = StyleSheet.create({
   },
   avatarText: { fontSize: 34, fontWeight: '700', color: colors.textInverse },
   name: { ...typography.h2 },
+  email: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
   phone: { ...typography.body, color: colors.textSecondary, marginTop: 2 },
   card: {
     backgroundColor: colors.surface,

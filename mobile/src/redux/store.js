@@ -8,6 +8,7 @@ import catalogReducer from './slices/catalogSlice';
 import cartReducer from './slices/cartSlice';
 import ordersReducer from './slices/ordersSlice';
 import billsReducer from './slices/billsSlice';
+import buildingsReducer from './slices/buildingsSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   cart: cartReducer,
   orders: ordersReducer,
   bills: billsReducer,
+  buildings: buildingsReducer,
 });
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);

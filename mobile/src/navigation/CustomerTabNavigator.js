@@ -8,7 +8,7 @@ import HomeScreen from '../screens/customer/HomeScreen';
 import CartScreen from '../screens/customer/CartScreen';
 import OrdersScreen from '../screens/customer/OrdersScreen';
 import BillsStack from './BillsStack';
-import ProfileScreen from '../screens/customer/ProfileScreen';
+import ProfileStack from './ProfileStack';
 import { colors, spacing, radius } from '../theme';
 import { CUSTOMER_TABS } from '../constants/routes';
 import { selectCartProductCount } from '../redux/slices/cartSlice';
@@ -22,7 +22,7 @@ const TAB_CONFIG = [
   { name: CUSTOMER_TABS.CART, label: 'Cart', Icon: ShoppingCart, component: CartScreen },
   { name: CUSTOMER_TABS.ORDERS, label: 'Orders', Icon: Package, component: OrdersScreen },
   { name: CUSTOMER_TABS.BILLS, label: 'Bills', Icon: Wallet, component: BillsStack },
-  { name: CUSTOMER_TABS.PROFILE, label: 'Profile', Icon: User, component: ProfileScreen },
+  { name: CUSTOMER_TABS.PROFILE, label: 'Profile', Icon: User, component: ProfileStack },
 ];
 
 export default function CustomerTabNavigator() {

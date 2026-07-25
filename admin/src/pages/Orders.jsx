@@ -15,8 +15,9 @@ import {
   App,
   Row,
   Col,
+  Dropdown,
 } from 'antd';
-import { SearchOutlined, PrinterOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SearchOutlined, PrinterOutlined, EyeOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import PageHeader from '../components/PageHeader';
 import useDebounce from '../hooks/useDebounce';
@@ -35,6 +36,42 @@ const { RangePicker } = DatePicker;
 function StatusTag({ status }) {
   const m = ORDER_STATUS_META[status] || { label: status, color: 'default' };
   return <Tag color={m.color}>{m.label}</Tag>;
+}
+
+// A colored pill matching StatusTag that opens a menu of allowed next
+// statuses — reads as "this order's status, and you can change it" instead
+// of a plain gray Select sitting oddly next to the colored Status column.
+// Falls back to a plain tag once nothing's left to transition to (DELIVERED,
+// CANCELLED) since a dropdown with no options is just a dead click target.
+function StatusPickerTag({ status, onChange, disabled }) {
+  const meta = ORDER_STATUS_META[status] || { label: status, color: 'default' };
+  const items = statusOptionsFor(status)
+    .filter((o) => !o.disabled)
+    .map((o) => ({ key: o.value, label: o.label }));
+
+  if (items.length === 0) {
+    return <Tag color={meta.color}>{meta.label}</Tag>;
+  }
+
+  return (
+    <Dropdown
+      trigger={['click']}
+      disabled={disabled}
+      menu={{ items, onClick: ({ key }) => onChange(key) }}
+    >
+      <Tag color={meta.color} style={{ cursor: 'pointer' }}>
+        {meta.label} <DownOutlined style={{ fontSize: 9 }} />
+      </Tag>
+    </Dropdown>
+  );
+}
+
+function statusOptionsFor(current) {
+  const allowed = [current, ...(ORDER_STATUS_TRANSITIONS[current] || [])];
+  return ORDER_STATUS_OPTIONS.filter((o) => allowed.includes(o.value)).map((o) => ({
+    ...o,
+    disabled: o.value === current,
+  }));
 }
 
 export default function Orders() {
@@ -80,14 +117,6 @@ export default function Orders() {
     }
   };
 
-  const statusOptionsFor = (current) => {
-    const allowed = [current, ...(ORDER_STATUS_TRANSITIONS[current] || [])];
-    return ORDER_STATUS_OPTIONS.filter((o) => allowed.includes(o.value)).map((o) => ({
-      ...o,
-      disabled: o.value === current,
-    }));
-  };
-
   const columns = [
     {
       title: 'Order',
@@ -111,12 +140,10 @@ export default function Orders() {
       align: 'right',
       render: (_, r) => (
         <Space>
-          <Select
-            size="small"
-            value={r.status}
-            style={{ width: 150 }}
-            options={statusOptionsFor(r.status)}
-            onChange={(v) => handleStatusChange(r, v)}
+          <StatusPickerTag
+            status={r.status}
+            disabled={updatingStatus}
+            onChange={(status) => handleStatusChange(r, status)}
           />
           <Button size="small" icon={<EyeOutlined />} onClick={() => setSelected(r)} />
           <Popconfirm
