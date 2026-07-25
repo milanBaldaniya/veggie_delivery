@@ -24,5 +24,6 @@ router.use('/salaries', require('./salary.routes'));
 router.use('/bills', require('./billing.routes'));
 router.use('/packing', require('./packing.routes'));
 router.use('/uploads', require('./upload.routes'));
+router.use('/support-settings', require('./supportSettings.routes'));
 
 module.exports = router;

@@ -9,6 +9,7 @@ import cartReducer from './slices/cartSlice';
 import ordersReducer from './slices/ordersSlice';
 import billsReducer from './slices/billsSlice';
 import buildingsReducer from './slices/buildingsSlice';
+import supportReducer from './slices/supportSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   orders: ordersReducer,
   bills: billsReducer,
   buildings: buildingsReducer,
+  support: supportReducer,
 });
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);

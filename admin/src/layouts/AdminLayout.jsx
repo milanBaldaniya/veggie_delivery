@@ -20,6 +20,7 @@ import {
   ProfileOutlined,
   BarChartOutlined,
   CarryOutOutlined,
+  CustomerServiceOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectCurrentUser } from '../features/auth/authSlice';
@@ -73,6 +74,13 @@ const MENU_GROUPS = [
     key: 'g-reports',
     label: 'Insights',
     items: [{ key: '/reports', icon: <BarChartOutlined />, label: 'Reports', roles: FINANCE }],
+  },
+  {
+    key: 'g-settings',
+    label: 'Settings',
+    items: [
+      { key: '/support-settings', icon: <CustomerServiceOutlined />, label: 'Support', roles: MGMT },
+    ],
   },
 ];
 

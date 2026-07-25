@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Pencil } from 'lucide-react-native';
-import { Button, Header } from '../../components/common';
+import { Pencil, LifeBuoy, ChevronRight } from 'lucide-react-native';
+import { Button, Header, ListItem } from '../../components/common';
 import { colors, spacing, radius, typography } from '../../theme';
 import { formatAddress } from '../../utils/format';
 import { logout } from '../../redux/slices/authSlice';
@@ -68,6 +68,16 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.addressSummary}>{formatAddress(user?.address)}</Text>
         </View>
 
+        <View style={styles.supportCard}>
+          <ListItem
+            title="Help & Support"
+            subtitle="Call, WhatsApp, email, or browse FAQs"
+            left={<LifeBuoy size={22} color={colors.primary} />}
+            right={<ChevronRight size={18} color={colors.textSecondary} />}
+            onPress={() => navigation.navigate(CUSTOMER_ROUTES.SUPPORT)}
+          />
+        </View>
+
         <Button title="Log out" variant="danger" onPress={handleLogout} style={styles.logout} />
       </ScrollView>
     </View>
@@ -108,5 +118,11 @@ const styles = StyleSheet.create({
   fieldLabel: { ...typography.body, color: colors.textSecondary },
   fieldValue: { ...typography.bodyBold, flexShrink: 1, textAlign: 'right', marginLeft: spacing.md },
   addressSummary: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.md },
+  supportCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    marginBottom: spacing.lg,
+    overflow: 'hidden',
+  },
   logout: { marginTop: spacing.sm },
 });

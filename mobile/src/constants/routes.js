@@ -28,6 +28,7 @@ export const CUSTOMER_ROUTES = Object.freeze({
   BILL_DETAILS: 'BillDetails',
   PROFILE: 'Profile',
   EDIT_PROFILE: 'EditProfile',
+  SUPPORT: 'Support',
   NOTIFICATIONS: 'Notifications',
   SETTINGS: 'Settings',
 });
