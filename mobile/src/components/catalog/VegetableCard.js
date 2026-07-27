@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { colors, spacing, radius, typography } from '../../theme';
 import { WEIGHT_OPTIONS, DEFAULT_WEIGHT_GRAMS } from '../../constants/weights';
 import { formatCurrency, formatWeight } from '../../utils/format';
@@ -17,7 +17,11 @@ export default function VegetableCard({ product, gramsInCart, onAdd, onRemove })
     <View style={styles.card}>
       <View style={styles.topRow}>
         <View style={styles.emojiBox}>
-          <Text style={styles.emoji}>{product.emoji}</Text>
+          {product.imageUrl ? (
+            <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+          ) : (
+            <Text style={styles.emoji}>{product.emoji}</Text>
+          )}
         </View>
         <View style={styles.info}>
           <Text style={styles.name}>{product.name}</Text>
@@ -91,12 +95,16 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: radius.md,
-    backgroundColor: `${colors.primaryLight}22`,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
+    overflow: 'hidden',
   },
-  emoji: { fontSize: 28 },
+  image: { width: '100%', height: '100%' },
+  emoji: { fontSize: 30 },
   info: { flex: 1 },
   name: { ...typography.bodyBold, fontSize: 16 },
   price: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
