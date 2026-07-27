@@ -12,3 +12,4 @@ export { default as VeggieIcon } from './VeggieIcon';
 export { default as GoogleIcon } from './GoogleIcon';
 export { default as VeggieScene } from './VeggieScene';
 export { default as BuildingPicker } from './BuildingPicker';
+export { default as WingPicker } from './WingPicker';

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { ChevronDown } from 'lucide-react-native';
-import { Input, Button, BuildingPicker } from '../common';
+import { Input, Button, BuildingPicker, WingPicker } from '../common';
 import { colors, spacing, typography } from '../../theme';
 import { profileSetupSchema } from '../../utils/validationSchemas';
+import { fetchBuildings } from '../../redux/slices/buildingsSlice';
 
 // Shared by ProfileSetupScreen (onboarding) and EditProfileScreen (later
 // edits) — same fields, same validation, same submit shape. `onSubmit`
@@ -12,6 +14,8 @@ import { profileSetupSchema } from '../../utils/validationSchemas';
 // so this form can show the error inline without knowing which screen it's
 // wired into.
 export default function ProfileForm({ initialValues, onSubmit, submitLabel = 'Continue', loading }) {
+  const dispatch = useDispatch();
+  const buildingsList = useSelector((state) => state.buildings.buildings);
   const [form, setForm] = useState({
     name: initialValues?.name || '',
     phone: initialValues?.phone || '',
@@ -22,6 +26,25 @@ export default function ProfileForm({ initialValues, onSubmit, submitLabel = 'Co
   });
   const [errors, setErrors] = useState({});
   const [buildingPickerVisible, setBuildingPickerVisible] = useState(false);
+  const [wingPickerVisible, setWingPickerVisible] = useState(false);
+
+  // Warm the buildings list with the already-saved building (edit-profile
+  // case) so its `wings` are available for the dropdown below without the
+  // user having to reopen the building picker first.
+  useEffect(() => {
+    if (initialValues?.building) {
+      dispatch(fetchBuildings({ search: initialValues.building }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // BuildingPicker's modal fetches buildings into this same redux slice and
+  // closes immediately on selection without fetching again, so the picked
+  // building's `wings` are still in `buildingsList` right after selection.
+  const selectedBuilding = buildingsList.find(
+    (b) => b.name.trim().toLowerCase() === form.building.trim().toLowerCase()
+  );
+  const wingOptions = selectedBuilding?.wings || [];
 
   const setField = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -86,17 +109,38 @@ export default function ProfileForm({ initialValues, onSubmit, submitLabel = 'Co
         visible={buildingPickerVisible}
         onClose={() => setBuildingPickerVisible(false)}
         value={form.building}
-        onSelect={setField('building')}
+        onSelect={(name) => setForm((prev) => ({ ...prev, building: name, wing: '' }))}
       />
       <View style={styles.row}>
-        <Input
-          label="Wing / Block"
-          placeholder="e.g. A"
-          value={form.wing}
-          onChangeText={setField('wing')}
-          error={errors.wing}
-          containerStyle={styles.rowItem}
-        />
+        {wingOptions.length > 0 ? (
+          <>
+            <Input
+              label="Wing / Block"
+              placeholder="Tap to select"
+              value={form.wing}
+              error={errors.wing}
+              onPress={() => setWingPickerVisible(true)}
+              rightIcon={<ChevronDown size={18} color={colors.textSecondary} />}
+              containerStyle={styles.rowItem}
+            />
+            <WingPicker
+              visible={wingPickerVisible}
+              onClose={() => setWingPickerVisible(false)}
+              options={wingOptions}
+              value={form.wing}
+              onSelect={setField('wing')}
+            />
+          </>
+        ) : (
+          <Input
+            label="Wing / Block"
+            placeholder="e.g. A"
+            value={form.wing}
+            onChangeText={setField('wing')}
+            error={errors.wing}
+            containerStyle={styles.rowItem}
+          />
+        )}
         <Input
           label="Flat no."
           placeholder="e.g. 302"

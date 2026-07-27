@@ -23,10 +23,8 @@ module.exports = {
   },
 
   order: {
-    // Customers can only place orders before this hour (24h clock) in the
-    // configured timezone; after it the order window is closed until the next
-    // day. Enforced server-side so a device with a wrong clock can't bypass it.
-    cutoffHour: Number(process.env.ORDER_CUTOFF_HOUR) || 12,
+    // Timezone the delivery window / order cutoff (admin-configurable, see
+    // DeliverySettings) and weekly billing period are evaluated in.
     timezone: process.env.ORDER_TIMEZONE || 'Asia/Kolkata',
   },
 

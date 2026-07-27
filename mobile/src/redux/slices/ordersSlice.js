@@ -46,9 +46,17 @@ const initialState = {
   listStatus: 'idle', // idle | loading | succeeded | error
   placeStatus: 'idle', // idle | loading | error
   error: null,
-  // { isOpen, message, cutoffLabel } — defaults to open so the UI never blocks
-  // ordering before the first fetch resolves.
-  window: { isOpen: true, message: null, cutoffLabel: null },
+  // { isOpen, message, cutoffLabel, deliveryStartLabel, deliveryEndLabel } —
+  // defaults to open so the UI never blocks ordering before the first fetch
+  // resolves; the label fields default to null so the Home banner stays
+  // hidden until real values arrive.
+  window: {
+    isOpen: true,
+    message: null,
+    cutoffLabel: null,
+    deliveryStartLabel: null,
+    deliveryEndLabel: null,
+  },
 };
 
 const ordersSlice = createSlice({

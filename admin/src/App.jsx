@@ -17,6 +17,7 @@ import Salaries from './pages/Salaries';
 import Billing from './pages/Billing';
 import Reports from './pages/Reports';
 import SupportSettings from './pages/SupportSettings';
+import DeliverySettings from './pages/DeliverySettings';
 
 export default function AppRoutes() {
   return (
@@ -44,6 +45,7 @@ export default function AppRoutes() {
         <Route path="salaries" element={<Salaries />} />
         <Route path="billing" element={<Billing />} />
         <Route path="support-settings" element={<SupportSettings />} />
+        <Route path="delivery-settings" element={<DeliverySettings />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

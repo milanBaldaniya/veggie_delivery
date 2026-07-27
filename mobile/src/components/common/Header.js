@@ -1,18 +1,21 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Platform, StatusBar } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, typography } from '../../theme';
 
 export default function Header({ title, onBack, right }) {
   // headerShown is false everywhere (screens render this custom Header
-  // instead), so it must account for the safe area itself: Android's
-  // status bar via StatusBar.currentHeight, iOS's notch/dynamic island
-  // via the safe-area inset (StatusBar.currentHeight is always 0 on iOS).
+  // instead), so it must account for the safe area itself. Use the
+  // safe-area inset on both platforms (same source tab-root screens like
+  // HomeScreen/BillsScreen already use for their own top padding) — Android's
+  // StatusBar.currentHeight is unreliable on newer edge-to-edge Android
+  // versions and was over-reporting the inset here, pushing this header
+  // noticeably lower than every other screen in the app.
   const insets = useSafeAreaInsets();
-  const topInset = Platform.OS === 'ios' ? insets.top : StatusBar.currentHeight || 0;
+  const topInset = insets.top;
 
   return (
-    <View style={[styles.container, { paddingTop: topInset, height: 56 + topInset }]}>
+    <View style={[styles.container, { paddingTop: topInset + spacing.md }]}>
       <View style={styles.side}>
         {onBack ? (
           <Pressable onPress={onBack} hitSlop={12}>
@@ -33,6 +36,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
+    // Matches the topBar paddingVertical used by tab-root screens
+    // (Cart/Orders/Bills) exactly, so back-button screens line up with them
+    // pixel-for-pixel instead of sitting in a separately-sized fixed box.
+    paddingBottom: spacing.md,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
@@ -45,7 +52,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   title: {
-    ...typography.h3,
+    // Matches the title size Cart/Orders/Bills use for their own topBar
+    // title (typography.h2) so header weight is consistent app-wide, even
+    // though those tab-root screens left-align theirs and this stays
+    // centered (standard back-button header convention).
+    ...typography.h2,
     flex: 1,
     textAlign: 'center',
   },

@@ -18,6 +18,7 @@ import { colors, spacing, radius, typography } from '../../theme';
 import { formatCurrency } from '../../utils/format';
 import { CUSTOMER_TABS } from '../../constants/routes';
 import { fetchProducts } from '../../redux/slices/catalogSlice';
+import { fetchOrderWindow } from '../../redux/slices/ordersSlice';
 import {
   addToCart,
   decrementItem,
@@ -33,7 +34,13 @@ export default function HomeScreen({ navigation }) {
   const cartCount = useSelector(selectCartProductCount);
   const cartTotal = useSelector(selectCartTotal);
   const user = useSelector((state) => state.auth.user);
+  const orderWindow = useSelector((state) => state.orders.window);
   const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    dispatch(fetchOrderWindow());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Debounced server-side search: every keystroke resets to page 1 rather
   // than filtering the in-memory list, so results reflect the full catalog
@@ -74,6 +81,16 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {orderWindow.deliveryStartLabel ? (
+        <View style={styles.topDeliveryBanner}>
+          <Text style={styles.topDeliveryBannerText}>
+            🚚 Delivery {orderWindow.deliveryStartLabel}–{orderWindow.deliveryEndLabel}
+            <Text style={styles.topDeliveryBannerDivider}>  |  </Text>
+            Order before {orderWindow.cutoffLabel}
+          </Text>
+        </View>
+      ) : null}
+
       <View style={styles.topBar}>
         <View style={styles.brandIconWrap}>
           <VeggieIcon size={20} />
@@ -214,6 +231,19 @@ const styles = StyleSheet.create({
   },
   greeting: { ...typography.h1 },
   tagline: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs },
+  topDeliveryBanner: {
+    backgroundColor: `${colors.primary}14`,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  topDeliveryBannerText: {
+    ...typography.caption,
+    color: colors.primaryDark,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  topDeliveryBannerDivider: { color: colors.textSecondary, fontWeight: '400' },
   listContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: 120,

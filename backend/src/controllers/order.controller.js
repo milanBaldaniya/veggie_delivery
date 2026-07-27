@@ -16,8 +16,8 @@ const round2 = (n) => Math.round(n * 100) / 100;
 const createOrder = asyncHandler(async (req, res) => {
   const { items } = req.body;
 
-  // Orders are only accepted before the daily cutoff (default 12 PM).
-  const window = orderWindow.getWindowStatus();
+  // Orders are only accepted before the daily cutoff (admin-configurable).
+  const window = await orderWindow.getWindowStatus();
   if (!window.isOpen) {
     throw ApiError.forbidden(window.message);
   }
@@ -96,7 +96,7 @@ const listMyOrders = asyncHandler(async (req, res) => {
 // Lets the app show/hide the "order window closed" state without guessing from
 // the (spoofable) device clock — the server is the single source of truth.
 const getOrderWindow = asyncHandler(async (req, res) => {
-  sendSuccess(res, { data: { window: orderWindow.getWindowStatus() } });
+  sendSuccess(res, { data: { window: await orderWindow.getWindowStatus() } });
 });
 
 module.exports = { createOrder, listMyOrders, getOrderWindow };
