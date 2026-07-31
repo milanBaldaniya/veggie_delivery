@@ -13,6 +13,11 @@ module.exports = {
   port: Number(process.env.PORT) || 5000,
   apiPrefix: process.env.API_PREFIX || '/api/v1',
 
+  // This server's own public origin (no trailing slash) — used to build
+  // absolute links (e.g. the APK download URL embedded in the QR code) since
+  // Render sits behind a proxy and req.protocol/host aren't reliable for that.
+  publicUrl: (process.env.PUBLIC_URL || `http://localhost:${Number(process.env.PORT) || 5000}`).replace(/\/$/, ''),
+
   mongoUri: process.env.MONGO_URI,
 
   jwt: {
