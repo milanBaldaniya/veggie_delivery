@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ProfileScreen from '../screens/customer/ProfileScreen';
 import EditProfileScreen from '../screens/customer/EditProfileScreen';
 import SupportScreen from '../screens/customer/SupportScreen';
+import LegalContentScreen from '../screens/customer/LegalContentScreen';
 import { CUSTOMER_ROUTES } from '../constants/routes';
 
 const Stack = createNativeStackNavigator();
@@ -15,6 +16,7 @@ export default function ProfileStack() {
       <Stack.Screen name={CUSTOMER_ROUTES.PROFILE} component={ProfileScreen} />
       <Stack.Screen name={CUSTOMER_ROUTES.EDIT_PROFILE} component={EditProfileScreen} />
       <Stack.Screen name={CUSTOMER_ROUTES.SUPPORT} component={SupportScreen} />
+      <Stack.Screen name={CUSTOMER_ROUTES.LEGAL_CONTENT} component={LegalContentScreen} />
     </Stack.Navigator>
   );
 }

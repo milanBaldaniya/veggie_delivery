@@ -17,6 +17,7 @@ import Salaries from './pages/Salaries';
 import Billing from './pages/Billing';
 import Reports from './pages/Reports';
 import SupportSettings from './pages/SupportSettings';
+import LegalContent from './pages/LegalContent';
 import DeliverySettings from './pages/DeliverySettings';
 import AppDownload from './pages/AppDownload';
 
@@ -46,6 +47,7 @@ export default function AppRoutes() {
         <Route path="salaries" element={<Salaries />} />
         <Route path="billing" element={<Billing />} />
         <Route path="support-settings" element={<SupportSettings />} />
+        <Route path="legal-content" element={<LegalContent />} />
         <Route path="delivery-settings" element={<DeliverySettings />} />
         <Route path="app-download" element={<AppDownload />} />
       </Route>

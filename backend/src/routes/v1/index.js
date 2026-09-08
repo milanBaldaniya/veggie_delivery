@@ -12,6 +12,7 @@ router.use('/customers', require('./customer.routes'));
 router.use('/products', require('./product.routes'));
 router.use('/buildings', require('./building.routes'));
 router.use('/support', require('./support.routes'));
+router.use('/legal', require('./legal.routes'));
 router.use('/orders', require('./order.routes'));
 router.use('/bills', require('./bill.routes'));
 router.use('/admin', require('./admin'));

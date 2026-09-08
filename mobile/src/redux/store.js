@@ -10,6 +10,7 @@ import ordersReducer from './slices/ordersSlice';
 import billsReducer from './slices/billsSlice';
 import buildingsReducer from './slices/buildingsSlice';
 import supportReducer from './slices/supportSlice';
+import legalReducer from './slices/legalSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   bills: billsReducer,
   buildings: buildingsReducer,
   support: supportReducer,
+  legal: legalReducer,
 });
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);

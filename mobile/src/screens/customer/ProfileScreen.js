@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Pencil, LifeBuoy, ChevronRight } from 'lucide-react-native';
+import { Pencil, LifeBuoy, ChevronRight, Info, ShieldCheck, FileText, RotateCcw } from 'lucide-react-native';
 import { Button, Header, ListItem } from '../../components/common';
 import { colors, spacing, radius, typography } from '../../theme';
 import { formatAddress } from '../../utils/format';
@@ -17,6 +17,15 @@ function Field({ label, value }) {
     </View>
   );
 }
+
+// Content for each of these is managed live from the admin panel — see
+// LegalContentScreen.
+const LEGAL_LINKS = [
+  { type: 'ABOUT_US', title: 'About Us', Icon: Info },
+  { type: 'PRIVACY_POLICY', title: 'Privacy Policy', Icon: ShieldCheck },
+  { type: 'TERMS_CONDITIONS', title: 'Terms & Conditions', Icon: FileText },
+  { type: 'RETURN_REFUND_POLICY', title: 'Return & Refund Policy', Icon: RotateCcw },
+];
 
 export default function ProfileScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -78,6 +87,20 @@ export default function ProfileScreen({ navigation }) {
           />
         </View>
 
+        <View style={styles.supportCard}>
+          {LEGAL_LINKS.map(({ type, title, Icon }, idx) => (
+            <React.Fragment key={type}>
+              {idx > 0 ? <View style={styles.divider} /> : null}
+              <ListItem
+                title={title}
+                left={<Icon size={22} color={colors.primary} />}
+                right={<ChevronRight size={18} color={colors.textSecondary} />}
+                onPress={() => navigation.navigate(CUSTOMER_ROUTES.LEGAL_CONTENT, { type, title })}
+              />
+            </React.Fragment>
+          ))}
+        </View>
+
         <Button title="Log out" variant="danger" onPress={handleLogout} style={styles.logout} />
       </ScrollView>
     </View>
@@ -123,6 +146,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     marginBottom: spacing.lg,
     overflow: 'hidden',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.divider,
+    marginLeft: spacing.md + 40 + spacing.sm,
   },
   logout: { marginTop: spacing.sm },
 });

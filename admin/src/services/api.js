@@ -44,6 +44,7 @@ export const baseApi = createApi({
     'Packing',
     'Support',
     'Delivery',
+    'LegalContent',
   ],
   endpoints: () => ({}),
 });

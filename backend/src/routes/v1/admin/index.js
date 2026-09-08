@@ -25,6 +25,7 @@ router.use('/bills', require('./billing.routes'));
 router.use('/packing', require('./packing.routes'));
 router.use('/uploads', require('./upload.routes'));
 router.use('/support-settings', require('./supportSettings.routes'));
+router.use('/legal-content', require('./legalContent.routes'));
 router.use('/delivery-settings', require('./deliverySettings.routes'));
 router.use('/app-download', require('./appDownload.routes'));
 

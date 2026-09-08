@@ -74,6 +74,23 @@ const SALARY_STATUS = Object.freeze({
 
 const PRODUCT_UNITS = Object.freeze(['kg', 'gram', 'piece', 'bunch', 'dozen']);
 
+// Admin-editable legal/informational documents, shown in-app and (for
+// compliance, e.g. Google Play's Privacy Policy URL requirement) at a public
+// web page too. See LEGAL_CONTENT_SLUGS below for the public URL mapping.
+const LEGAL_CONTENT_TYPES = Object.freeze({
+  PRIVACY_POLICY: 'PRIVACY_POLICY',
+  TERMS_CONDITIONS: 'TERMS_CONDITIONS',
+  RETURN_REFUND_POLICY: 'RETURN_REFUND_POLICY',
+  ABOUT_US: 'ABOUT_US',
+});
+
+const LEGAL_CONTENT_SLUGS = Object.freeze({
+  [LEGAL_CONTENT_TYPES.PRIVACY_POLICY]: 'privacy-policy',
+  [LEGAL_CONTENT_TYPES.TERMS_CONDITIONS]: 'terms-conditions',
+  [LEGAL_CONTENT_TYPES.RETURN_REFUND_POLICY]: 'return-refund-policy',
+  [LEGAL_CONTENT_TYPES.ABOUT_US]: 'about-us',
+});
+
 module.exports = {
   ROLES,
   PANEL_ROLES,
@@ -86,4 +103,6 @@ module.exports = {
   EXPENSE_CATEGORIES,
   SALARY_STATUS,
   PRODUCT_UNITS,
+  LEGAL_CONTENT_TYPES,
+  LEGAL_CONTENT_SLUGS,
 };

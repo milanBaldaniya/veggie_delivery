@@ -23,6 +23,7 @@ import {
   CustomerServiceOutlined,
   ClockCircleOutlined,
   QrcodeOutlined,
+  FileProtectOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectCurrentUser } from '../features/auth/authSlice';
@@ -82,6 +83,7 @@ const MENU_GROUPS = [
     label: 'Settings',
     items: [
       { key: '/support-settings', icon: <CustomerServiceOutlined />, label: 'Support', roles: MGMT },
+      { key: '/legal-content', icon: <FileProtectOutlined />, label: 'Legal Content', roles: MGMT },
       { key: '/delivery-settings', icon: <ClockCircleOutlined />, label: 'Delivery Settings', roles: MGMT },
       { key: '/app-download', icon: <QrcodeOutlined />, label: 'App Download', roles: MGMT },
     ],
