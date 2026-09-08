@@ -7,7 +7,6 @@ const rateLimit = require('express-rate-limit');
 
 const env = require('./config/env');
 const v1Router = require('./routes/v1');
-const { renderLegalPage } = require('./controllers/publicLegal.controller');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
@@ -37,10 +36,6 @@ app.use(env.apiPrefix, v1Router);
 // Static app downloads (e.g. /downloads/app-latest.apk) — update the file in
 // backend/public/downloads/ and redeploy to publish a new release build.
 app.use('/downloads', express.static(path.join(__dirname, '..', 'public', 'downloads')));
-
-// Public legal pages (e.g. /legal/privacy-policy) — plain HTML, admin-edited
-// content. This is the URL to give Google Play Console's Privacy Policy field.
-app.get('/legal/:slug', renderLegalPage);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

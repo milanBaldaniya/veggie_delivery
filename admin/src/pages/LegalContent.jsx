@@ -6,14 +6,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import dayjs from 'dayjs';
 import PageHeader from '../components/PageHeader';
 import { useGetLegalContentListQuery, useUpdateLegalContentMutation } from '../services/legalContentApi';
-
-// type -> tab label + the public web page slug (see backend LEGAL_CONTENT_SLUGS).
-const DOCS = [
-  { type: 'PRIVACY_POLICY', label: 'Privacy Policy', slug: 'privacy-policy' },
-  { type: 'TERMS_CONDITIONS', label: 'Terms & Conditions', slug: 'terms-conditions' },
-  { type: 'RETURN_REFUND_POLICY', label: 'Return & Refund Policy', slug: 'return-refund-policy' },
-  { type: 'ABOUT_US', label: 'About Us', slug: 'about-us' },
-];
+import { LEGAL_DOCS as DOCS } from '../utils/legalDocs';
 
 const QUILL_MODULES = {
   toolbar: [
@@ -24,8 +17,6 @@ const QUILL_MODULES = {
     ['clean'],
   ],
 };
-
-const PUBLIC_SITE_ORIGIN = import.meta.env.VITE_PUBLIC_SITE_ORIGIN || '';
 
 function DocEditor({ doc, item, saving, onSave }) {
   const { message } = App.useApp();
@@ -46,7 +37,9 @@ function DocEditor({ doc, item, saving, onSave }) {
     await onSave({ type: doc.type, title, contentHtml: html });
   };
 
-  const publicUrl = PUBLIC_SITE_ORIGIN ? `${PUBLIC_SITE_ORIGIN}/legal/${doc.slug}` : `/legal/${doc.slug}`;
+  // Same-origin, no-login route rendered by PublicLegalContent — this is the
+  // URL to give Google Play Console's Privacy Policy field.
+  const publicUrl = `/legal/${doc.slug}`;
 
   return (
     <>

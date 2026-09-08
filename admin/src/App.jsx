@@ -18,6 +18,7 @@ import Billing from './pages/Billing';
 import Reports from './pages/Reports';
 import SupportSettings from './pages/SupportSettings';
 import LegalContent from './pages/LegalContent';
+import PublicLegalContent from './pages/PublicLegalContent';
 import DeliverySettings from './pages/DeliverySettings';
 import AppDownload from './pages/AppDownload';
 
@@ -25,6 +26,8 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      {/* Public — no login required, this is the URL for Google Play Console etc. */}
+      <Route path="/legal/:slug" element={<PublicLegalContent />} />
 
       <Route
         element={
